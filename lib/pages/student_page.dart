@@ -1,7 +1,36 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:std_get_x/controllers/student_getx_controller.dart';
+import 'package:std_get_x/models/student_model.dart';
 
 class StudentScreen extends StatelessWidget {
-  const StudentScreen({super.key});
+  final StudentController studentController = Get.put(StudentController());
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController ageController = TextEditingController();
+  final Student? selectedStudent;
+  final Function(Student)? onStudentUpdated;
+
+  StudentScreen({Key? key, this.selectedStudent, this.onStudentUpdated})
+      : super(key: key) {
+    if (selectedStudent != null) {
+      nameController.text = selectedStudent!.name;
+      ageController.text = selectedStudent!.age.toString();
+      if (selectedStudent!.image.isNotEmpty) {
+        studentController.pickImage(selectedStudent!.image);
+      }
+    }
+  }
+
+  void pickImage(ImageSource source) async {
+    final pickedFile = await ImagePicker().pickImage(source: source);
+    if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      studentController.pickImage(base64Encode(bytes));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,32 +46,43 @@ class StudentScreen extends StatelessWidget {
             color: Color.fromARGB(255, 108, 99, 19),
           ),
         ),
-        title: const Text(
-          "Student",
-          style: TextStyle(
-              fontSize: 35,
-              fontWeight: FontWeight.bold,
-              color: Color.fromARGB(255, 108, 99, 19)),
+        title: Text(
+          selectedStudent == null ? "Add Student" : "Edit Student",
+          style: const TextStyle(
+            fontSize: 35,
+            fontWeight: FontWeight.bold,
+            color: Color.fromARGB(255, 108, 99, 19),
+          ),
         ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CircleAvatar(
-              backgroundColor: Colors.lime,
-              radius: 90,
-              child: Icon(
-                Icons.image_outlined,
-                size: 60,
-                color: Colors.lime[50],
-              ),
-            ),
+            Obx(() {
+              return CircleAvatar(
+                backgroundColor: Colors.lime,
+                radius: 90,
+                backgroundImage: studentController.imageBase64.value.isNotEmpty
+                    ? MemoryImage(
+                        base64Decode(studentController.imageBase64.value))
+                    : null,
+                child: studentController.imageBase64.value.isEmpty
+                    ? Icon(
+                        Icons.image_outlined,
+                        size: 60,
+                        color: Colors.lime[50],
+                      )
+                    : null,
+              );
+            }),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () => pickImage(ImageSource.camera),
                   style: ElevatedButton.styleFrom(
                     shadowColor: Colors.lime[200],
                     elevation: 5,
@@ -54,7 +94,7 @@ class StudentScreen extends StatelessWidget {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () => pickImage(ImageSource.gallery),
                   style: ElevatedButton.styleFrom(
                     shadowColor: Colors.lime[200],
                     elevation: 5,
@@ -76,7 +116,7 @@ class StudentScreen extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: TextFormField(
-                    // controller: ,
+                    controller: nameController,
                     decoration: const InputDecoration(
                       border: InputBorder.none,
                       labelText: 'Name',
@@ -99,7 +139,7 @@ class StudentScreen extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: TextFormField(
-                    // controller: ,
+                    controller: ageController,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
                       border: InputBorder.none,
@@ -123,7 +163,32 @@ class StudentScreen extends StatelessWidget {
                 elevation: 5,
                 textStyle: const TextStyle(fontSize: 16),
               ),
-              onPressed: () {},
+              onPressed: () {
+                if (nameController.text.isNotEmpty &&
+                    ageController.text.isNotEmpty &&
+                    studentController.imageBase64.value.isNotEmpty) {
+                  final student = Student(
+                    name: nameController.text,
+                    age: int.parse(ageController.text),
+                    image: studentController.imageBase64.value,
+                  );
+                  if (selectedStudent == null) {
+                    studentController.addStudent(student);
+                  } else {
+                    onStudentUpdated?.call(student);
+                  }
+                  Navigator.pop(context);
+                } else {
+                  // Show GetX Snackbar for validation error
+                  Get.snackbar(
+                    'Error',
+                    'Please fill all fields',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: Colors.red,
+                    colorText: Colors.white,
+                  );
+                }
+              },
               child: const Text(
                 'Submit',
                 style: TextStyle(

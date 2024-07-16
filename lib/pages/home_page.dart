@@ -27,7 +27,7 @@ class HomeScreen extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {
-              Get.to(const StudentSearchScreen());
+              Get.to(StudentSearchScreen());
             },
             icon: const Icon(
               Icons.search_sharp,

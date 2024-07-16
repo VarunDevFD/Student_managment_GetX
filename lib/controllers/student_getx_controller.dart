@@ -1,11 +1,10 @@
-import 'dart:io';
-
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:std_get_x/models/student_model.dart';
 
 class StudentController extends GetxController {
   var students = <Student>[].obs;
+  RxList<Student> filteredStudents = RxList<Student>();
   var imageBase64 = ''.obs;
   Box<Student> studentBox = Hive.box('students');
 
@@ -38,5 +37,14 @@ class StudentController extends GetxController {
     imageBase64.value = base64Image;
   }
 
- 
+  void filterStudents(String query) {
+    if (query.isEmpty) {
+      filteredStudents.value = students.toList();
+    } else {
+      filteredStudents.value = students
+          .where((student) =>
+              student.name.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    }
+  }
 }

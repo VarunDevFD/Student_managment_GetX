@@ -1,7 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:std_get_x/controllers/student_getx_controller.dart';
+import 'package:std_get_x/pages/student_detail_page.dart';
 
 class StudentSearchScreen extends StatelessWidget {
-  const StudentSearchScreen({super.key});
+  final StudentController studentController = Get.find<StudentController>();
+  final TextEditingController searchController = TextEditingController();
+
+  StudentSearchScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,24 +33,63 @@ class StudentSearchScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          const Padding(
-            padding: EdgeInsets.all(8.0),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
             child: TextField(
-              decoration: InputDecoration(
+              controller: searchController,
+              decoration: const InputDecoration(
                 hintText: 'Search Students...',
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),
               ),
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: 0,
-              itemBuilder: (context, index) {
-                return const Text("No Student");
+              onChanged: (value) {
+                studentController.filterStudents(
+                    value); // Call filterStudents from controller
               },
             ),
           ),
+          Obx(() {
+            return Expanded(
+              child: ListView.builder(
+                itemCount: studentController.filteredStudents.length,
+                itemBuilder: (context, index) {
+                  final student = studentController.filteredStudents[index];
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.lime,
+                      backgroundImage: student.image.isNotEmpty
+                          ? MemoryImage(
+                              base64Decode(student.image),
+                            )
+                          : null,
+                      child: student.image.isEmpty
+                          ? const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                            )
+                          : null,
+                    ),
+                    title: Text(
+                      student.name,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Age: ${student.age}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                      ),
+                    ),
+                    onTap: () {
+                      Get.to(StudentDetailScreen(student: student));
+                    },
+                  );
+                },
+              ),
+            );
+          }),
         ],
       ),
     );

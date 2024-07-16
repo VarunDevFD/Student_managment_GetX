@@ -20,7 +20,12 @@ class StudentScreen extends StatelessWidget {
       ageController.text = selectedStudent!.age.toString();
       if (selectedStudent!.image.isNotEmpty) {
         studentController.pickImage(selectedStudent!.image);
+      } else {
+        studentController.clearImage();
       }
+    } else {
+     
+      studentController.clearImage();
     }
   }
 
@@ -182,7 +187,7 @@ class StudentScreen extends StatelessWidget {
                   // Show GetX Snackbar for validation error
                   Get.snackbar(
                     'Error',
-                    'Please fill all fields',
+                    'Please fill all fields and select an image',
                     snackPosition: SnackPosition.BOTTOM,
                     backgroundColor: Colors.red,
                     colorText: Colors.white,

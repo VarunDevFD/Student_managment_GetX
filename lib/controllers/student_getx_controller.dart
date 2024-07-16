@@ -37,6 +37,10 @@ class StudentController extends GetxController {
     imageBase64.value = base64Image;
   }
 
+  void clearImage() {
+    imageBase64.value = ''; // Clear the image base64 string
+  }
+
   void filterStudents(String query) {
     if (query.isEmpty) {
       filteredStudents.value = students.toList();

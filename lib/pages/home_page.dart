@@ -83,7 +83,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 trailing: Wrap(
-                  spacing: 12, // Space between each icon
+                  spacing: 12,
                   children: [
                     IconButton(
                       icon: const Icon(Icons.edit),
@@ -105,7 +105,36 @@ class HomeScreen extends StatelessWidget {
                         color: Colors.red,
                       ),
                       onPressed: () {
-                        studentController.deleteStudent(index);
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text("confirm Delete"),
+                                content: const Text(
+                                    "Are you sure you want to delete this student?"),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text(
+                                      "Cancel",
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      studentController.deleteStudent(index);
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text(
+                                      "Delete",
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  )
+                                ],
+                              );
+                            });
                       },
                     ),
                   ],
